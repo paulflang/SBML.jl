@@ -163,6 +163,16 @@ function extractModel(mdl::VPtr)::SBML.Model
     # get the FBC plugin pointer (FbcModelPlugin_t)
     mdl_fbc = ccall(sbml(:SBase_getPlugin), VPtr, (VPtr, Cstring), mdl, "fbc")
 
+    prinln("ccall:")
+    println(ccall(sbml(:Model_getNumRules), Cuint, (VPtr,), mdl))
+    if ccall(sbml(:Model_getNumRules), Cuint, (VPtr,), mdl) > 0
+        throw(ErrorException("Rules are not implemented"))
+    elseif ccall(sbml(:Model_getNumConstraints), Cuint, (VPtr,), mdl) > 0
+        throw(ErrorException("Constraints are not implemented"))
+    elseif ccall(sbml(:Model_getNumEvents), Cuint, (VPtr,), mdl) > 0
+        throw(ErrorException("Events are not implemented"))
+    end
+    
     # get the parameters
     parameters = Dict{String,Float64}()
     for i = 1:ccall(sbml(:Model_getNumParameters), Cuint, (VPtr,), mdl)
