@@ -142,10 +142,10 @@ function get_error_messages(doc::VPtr, error::Exception)
     for i = 1:n_errs
         err = ccall(sbml(:SBMLDocument_getError), VPtr, (VPtr, Cuint), doc, i - 1)
         msg = string(strip(get_string(err, :XMLError_getMessage)))
-        @error "SBML reported error: $(msg)"
+        occursin("consistency of units", msg) || @error "SBML reported error: $(msg)"
     end
     if n_errs > 0
-        throw(error)
+        # throw(error)
     end
     nothing
 end
