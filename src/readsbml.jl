@@ -1,6 +1,3 @@
-
-const VPtr = Ptr{Cvoid}
-
 """
     get_string(x::VPtr, fn_sym)::Maybe{String}
 
@@ -96,15 +93,7 @@ end)
 function readSBML(fn::String, sbml_conversion = document -> nothing)::SBML.Model
     doc = ccall(sbml(:readSBML), VPtr, (Cstring,), fn)
     try
-        n_errs = ccall(sbml(:SBMLDocument_getNumErrors), Cuint, (VPtr,), doc)
-        for i = 0:n_errs-1
-            err = ccall(sbml(:SBMLDocument_getError), VPtr, (VPtr, Cuint), doc, i)
-            msg = strip(get_string(err, :XMLError_getMessage))
-            @error "SBML reported error: $msg"
-        end
-        if n_errs > 0
-            throw(AssertionError("Opening SBML document has reported errors"))
-        end
+        get_error_messages(doc, AssertionError("Opening SBML document has reported errors"))
 
         sbml_conversion(doc)
 
@@ -317,8 +306,8 @@ function extractModel(mdl::VPtr)::SBML.Model
             for j = 1:ccall(sbml(:KineticLaw_getNumParameters), Cuint, (VPtr,), kl)
                 p = ccall(sbml(:KineticLaw_getParameter), VPtr, (VPtr, Cuint), kl, j - 1)
                 id = get_string(p, :Parameter_getId)
-                pval = () -> ccall(sbml(:Parameter_getValue), Cdouble, (VPtr,), p)
-                punit = () -> get_string(p, :Parameter_getUnits)
+                pval() = ccall(sbml(:Parameter_getValue), Cdouble, (VPtr,), p)
+                punit() = get_string(p, :Parameter_getUnits)
                 if id == "LOWER_BOUND"
                     lb = (pval(), punit())
                 elseif id == "UPPER_BOUND"

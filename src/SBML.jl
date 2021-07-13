@@ -3,15 +3,17 @@ module SBML
 using SBML_jll, Libdl
 using SparseArrays
 using Symbolics
+using IfElse
 
+include("types.jl")
 include("structs.jl")
 include("version.jl")
 
-include("readsbml.jl")
 include("converters.jl")
 include("math.jl")
-include("utils.jl")
+include("readsbml.jl")
 include("symbolics.jl")
+include("utils.jl")
 
 sbml(sym::Symbol) = dlsym(SBML_jll.libsbml_handle, sym)
 
